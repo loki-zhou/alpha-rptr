@@ -79,7 +79,7 @@ def to_data_frame(data):
 
 def resample(data_frame, bin_size):    
     resample_time = allowed_range[bin_size][1]    
-    return data_frame.resample(resample_time, label='right', closed='right').agg({
+    return data_frame.resample(resample_time, label='left', closed='left').agg({
         "open": "first",
         "high": "max",
         "low": "min",

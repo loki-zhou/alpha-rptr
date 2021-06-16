@@ -788,7 +788,7 @@ class BinanceFutures:
             source_to_object_list =[]
            
             for s in source:   
-                timestamp_to_datetime = datetime.fromtimestamp(s[6]/1000).astimezone(UTC)               
+                timestamp_to_datetime = datetime.fromtimestamp(s[0]/1000).astimezone(UTC)               
                 source_to_object_list.append({
                         "timestamp" : timestamp_to_datetime,
                         "high" : float(s[2]),

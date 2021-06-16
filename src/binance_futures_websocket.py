@@ -148,7 +148,7 @@ class BinanceFuturesWs:
                 
                 if e.startswith("kline"):
                     data = [{
-                        "timestamp" : datas['k']['T'],
+                        "timestamp" : datas['k']['t'],
                         "high" : float(datas['k']['h']),
                         "low" : float(datas['k']['l']),
                         "open" : float(datas['k']['o']),
