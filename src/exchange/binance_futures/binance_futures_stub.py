@@ -442,7 +442,7 @@ class BinanceFuturesStub(BinanceFutures):
             if self.balance_ath < self.balance:
                     self.balance_ath = self.balance
             if self.balance_ath > self.balance:
-                if self.max_draw_down_session is 0:
+                if self.max_draw_down_session == 0:
                     self.max_draw_down_session = self.balance_ath - self.balance
                     self.max_draw_down_session_perc = (self.balance_ath - self.balance) / self.balance_ath * 100
                 else:

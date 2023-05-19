@@ -402,7 +402,7 @@ function format_number(price, sig_digits){
     return price >= 1 || price <= -1 ? (price % 1 == 0 ? price : price.toFixed(sig_digits)) : price.toPrecision(sig_digits)
 }
 
-function load_trades(chart_data, order_data){      
+function load_trades(chart_data, order_data){
 
     var drawdown = {};
     var balance = {};
@@ -463,7 +463,7 @@ function load_trades(chart_data, order_data){
         
         var price_formatted = format_number(order_data[i]["price"], 2)
         var av_price_formatted = format_number(order_data[i]["av_price"], 2)
-        
+
         trades_table.push([order_date, type, price_formatted, quantity_formatted, av_price_formatted, position_formatted, pnl_formatted, balance_formatted,order_data[i]["drawdown"]])
 
         var time = new Date(order_data[i]["time"]).getTime()/1000
