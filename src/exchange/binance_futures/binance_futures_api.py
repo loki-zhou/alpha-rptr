@@ -26,7 +26,8 @@ from urllib.parse import urlparse
 import time, hashlib, hmac
 import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+# from requests.packages.urllib3.util.retry import Retry
+from urllib3.util import Retry
 import logging
 from operator import itemgetter
 

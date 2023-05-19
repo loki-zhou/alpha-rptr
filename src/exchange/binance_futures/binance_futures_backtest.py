@@ -22,13 +22,13 @@ OHLC_FILENAME = os.path.join(os.path.dirname(__file__), "../ohlc/{}/{}/{}/data.c
 
 class BinanceFuturesBackTest(BinanceFuturesStub):   
     # Update Data before Backtest
-    update_data = True
+    update_data = False
     # Minute granularity
     minute_granularity = False
     # Check candles
     check_candles_flag = True
     # Number of days to download and test historical data 
-    days = 120
+    days = 10
     # Search for the oldest historical data
     search_oldest = 10 # Search for the oldest historical data, integer for increments in days, False or 0 to turn it off
     # Enable log output
