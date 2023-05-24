@@ -83,13 +83,13 @@ class Sample(Bot):
                 # Enter a long position with the specified
                 # lot, size and a callback function to be executed upon order execution
                 # for non entry orders consider self.exchange.order() function
-                self.exchange.entry("Long", True, lot, callback=entry_callback)                       
+                self.exchange.entry("Long", True, lot, callback=entry_callback, round_decimals=3)
                 
             if short_entry_condition:
                 # Enter a short position with the specified 
                 # lot, size and a callback function to be executed upon order execution
                 # for non entry orders consider self.exchange.order() function
-                self.exchange.entry("Short", False, lot, callback=entry_callback) 
+                self.exchange.entry("Short", False, lot, callback=entry_callback, round_decimals=3)
             
            # Store historical entry signals, you can store any variable this way to keep historical values
             self.isLongEntry.append(long_entry_condition)
