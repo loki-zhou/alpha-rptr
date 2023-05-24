@@ -22,7 +22,7 @@ OHLC_FILENAME = os.path.join(os.path.dirname(__file__), "..\\..\\..\\ohlc\\{}\\{
 
 class BinanceFuturesBackTest(BinanceFuturesStub):   
     # Update Data before Backtest
-    update_data = False
+    update_data = True
     # Minute granularity
     minute_granularity = False
     # Check candles

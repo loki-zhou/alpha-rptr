@@ -7,6 +7,7 @@ import numpy as np
 import scipy 
 from numpy import nan as npNaN
 import pandas as pd
+import matplotlib.pyplot as plt
 from pandas import Series
 import talib
 
@@ -1032,6 +1033,76 @@ def jump_diffusion_model(timesteps, dt, initial_price, mean_return, volatility, 
     return path
 
 
+def monte_carlo_simulation(start_equity, profit_to_loss_ratio, num_simulations, win_rate, num_steps, risk_per_trade_input, randomize_winrate=0, compounding=False):
+    """
+    Perform Monte Carlo simulation for equity growth.
+    Parameters:
+        start_equity (float): Initial equity value.
+        profit_to_loss_ratio (float): Ratio of profit to loss per trade.
+        num_simulations (int): Number of simulations to run.
+        win_rate (float): Probability of winning a trade. (0.1 is 10% etc.)
+        num_steps (int): Number of steps in each simulation.
+        risk_per_trade_input (float): Risk per trade as a percentage of equity. (0.01 is 1% etc.)
+        randomize_winrate (float): Percentage of winrate to randomize (default: 0). (0.1 is 10% etc.)
+        compounding (bool): Whether to apply compounding (default: False).
+    """
+    equity_curves = []
+
+    for _ in range(num_simulations):
+        equity_curve = [start_equity]
+        equity = start_equity
+
+        for _ in range(num_steps):
+            # Randomize winrate if specified
+            if randomize_winrate:
+                random_factor = np.random.uniform(1 - randomize_winrate, 1 + randomize_winrate)
+                randomized_win_rate = win_rate * random_factor
+            else:
+                randomized_win_rate = win_rate
+
+            # Calculate risk per trade as a percentage of equity
+            risk_per_trade = start_equity * risk_per_trade_input
+
+            # Simulate profit/loss based on winrate
+            if np.random.rand() < randomized_win_rate:
+                profit = profit_to_loss_ratio * risk_per_trade
+            else:
+                profit = -risk_per_trade
+
+            # Update equity based on compounding or non-compounding logic
+            if compounding:
+                equity = equity + equity * profit
+            else:
+                equity = equity + profit if equity + profit >= 0 else 0
+
+            equity_curve.append(equity)
+
+        equity_curves.append(equity_curve)
+
+    # Plotting the equity curves
+    plt.figure(figsize=(10, 6))
+    for i, curve in enumerate(equity_curves):
+        plt.plot(curve, label=f'Simulation {i+1}')
+
+    # Calculate drawdowns
+    max_drawdowns = [np.max(np.maximum.accumulate(curve) - curve) / start_equity * 100 for curve in equity_curves]
+    average_drawdowns = [np.mean(np.maximum.accumulate(curve) - curve) / start_equity * 100 for curve in equity_curves]
+
+
+    # Display statistics in legend
+    win_rate_text = f'Win Rate: {randomized_win_rate * 100:.2f}%'
+    max_drawdown_text = f'Max Drawdown: {np.max(max_drawdowns):.2f}%'
+    average_drawdown_text = f'Average Drawdown: {np.mean(average_drawdowns):.2f}%'
+
+    plt.legend([win_rate_text, max_drawdown_text, average_drawdown_text])
+
+    plt.xlabel('Steps')
+    plt.ylabel('Equity')
+    plt.title('Monte Carlo Simulation')
+    plt.grid(True)
+    plt.show()
+
+
 def is_under(src, value, p):
     for i in range(p, -1, -1):
         if src[-i - 1] > value:
@@ -1060,3 +1131,53 @@ def sharpe_ratio(returns, risk_free_rate):
     std_dev = np.std(returns)
     sharpe_ratio = np.mean(excess_returns) / std_dev
     return sharpe_ratio
+
+
+def ulcer_index(data):
+    """
+    Calculate the Ulcer Index of a given data series.
+    Parameters:
+        data (numpy.ndarray): Input data series.
+    Returns:
+        float: Ulcer Index value.
+    """
+    # Calculate the maximum drawdown
+    max_drawdown = np.maximum.accumulate(data) - data
+
+    # Square the maximum drawdown
+    squared_drawdown = np.square(max_drawdown)
+
+    # Calculate the average of squared drawdowns
+    average_squared_drawdown = np.mean(squared_drawdown)
+
+    # Take the square root to obtain the Ulcer Index
+    ulcer_index = np.sqrt(average_squared_drawdown)
+
+    return ulcer_index
+
+
+def compute_log_returns(balance_changes):
+    """
+    Computes the log returns of a list or NumPy array of balance changes.
+    Args:
+        balance_changes: A list or NumPy array of balance changes.
+    Returns:
+        log_returns: A list containing the log returns of the balance changes.
+    """
+    if isinstance(balance_changes, np.ndarray):
+        # If input is a NumPy array, compute log returns using masked arrays
+        mask = balance_changes > 0  # Create a mask for positive values
+        masked_balance_changes = np.ma.array(balance_changes, mask=~mask)  # Mask non-positive values
+        log_returns = np.ma.log(masked_balance_changes).filled(0)  # Compute log returns, fill masked values with 0
+    else:
+        # If input is a list, compute log returns using list comprehension and math.log()
+        log_returns = []
+        for i, balance_change in enumerate(balance_changes):
+            if balance_change > 0:
+                log_returns.append(math.log(balance_change))
+            else:
+                log_returns.append(0.0)
+        # Pad the log_returns list with zeros to match the length of balance_changes
+        if len(log_returns) < len(balance_changes):
+            log_returns.extend([0.0] * (len(balance_changes) - len(log_returns)))
+    return log_returns
