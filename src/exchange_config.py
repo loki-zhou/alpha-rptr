@@ -14,10 +14,10 @@ exchange_config = {
                 # ==== Papertrading And Backtest Class Config ====
                  "balance": 1000,
                  "leverage": 1,
-                 "update_data": True,
+                 "update_data": False,
                  "check_candles_flag": True,
-                 "days": 1200,
-                 "search_oldest": 10, # Search for the oldest historical data, integer for increments in days, False or 0 to turn it off
+                 "days": 10,
+                 "search_oldest": 0, # Search for the oldest historical data, integer for increments in days, False or 0 to turn it off
                  # Warmup timeframe - used for loading warmup candles for indicators when minute granularity is need
                  # highest tf, if None its going to find it automatically based on highest tf and ohlcv_len
                  "warmup_tf": None}, 

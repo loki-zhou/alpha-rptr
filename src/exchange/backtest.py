@@ -20,9 +20,10 @@ from src.exchange_config import exchange_config
 from src.exchange.binance_futures.binance_futures_stub import BinanceFuturesStub
 
 
-OHLC_DIRNAME = os.path.join(os.path.dirname(__file__), "./ohlc/{}/{}/{}")
-OHLC_FILENAME = os.path.join(os.path.dirname(__file__), "./ohlc/{}/{}/{}/data.csv")
-
+# OHLC_DIRNAME = os.path.join(os.path.dirname(__file__), "./ohlc/{}/{}/{}")
+# OHLC_FILENAME = os.path.join(os.path.dirname(__file__), "./ohlc/{}/{}/{}/data.csv")
+OHLC_DIRNAME = os.path.join(os.path.dirname(__file__), "..\\..\\ohlc\\{}\\{}\\{}")
+OHLC_FILENAME = os.path.join(os.path.dirname(__file__), "..\\..\\ohlc\\{}\\{}\\{}\\data.csv")
 
 class BackTest(Stub):   
     # Update Data before Backtest
@@ -34,7 +35,7 @@ class BackTest(Stub):
     # Number of days to download and test historical data 
     days = 120
     # Search for the oldest historical data
-    search_oldest = 10 # Search for the oldest historical data, integer for increments in days, False or 0 to turn it off
+    search_oldest = 0 # Search for the oldest historical data, integer for increments in days, False or 0 to turn it off
     # Enable log output
     enable_trade_log = True
     # Start balance
