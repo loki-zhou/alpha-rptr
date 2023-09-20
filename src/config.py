@@ -65,14 +65,14 @@ config = {
                 }
     },
     # To use Args profiles, add them here and run by using the flag --profile <your profile string>
-    "args_profile": {"binanceaccount1_Sample_ethusdt": {"--test": False,
+    "args_profile": {"binanceaccount1_Sample_ethusdt": {"--test": True,
                                                         "--stub": False,
                                                         "--demo": False,
                                                         "--hyperopt": False,
                                                         "--spot": False,
-                                                        "--account": "binanceaccount1",
+                                                        "--account": "binanceaccount3",
                                                         "--exchange": "binance",
-                                                        "--pair": "ETHUSDT",
+                                                        "--pair": "BTCUSDT",
                                                         "--strategy": "Sample",
                                                         "--session": None}}                                              
 }
