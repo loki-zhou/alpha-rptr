@@ -26,7 +26,7 @@ from src.gmail_sub import GmailSub
 # Candle tester
 class CandleTester(Bot):
     def __init__(self):
-        Bot.__init__(self, ['1m'])
+        Bot.__init__(self, ['15m'])
 
 
     # this is for parameter optimization in hyperopt mode

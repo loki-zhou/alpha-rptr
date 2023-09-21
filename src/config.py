@@ -73,6 +73,6 @@ config = {
                                                         "--account": "binanceaccount3",
                                                         "--exchange": "binance",
                                                         "--pair": "BTCUSDT",
-                                                        "--strategy": "Sample",
+                                                        "--strategy": "CandleTester",
                                                         "--session": None}}                                              
 }
