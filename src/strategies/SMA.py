@@ -26,7 +26,7 @@ from src.gmail_sub import GmailSub
 # SMA CrossOver with Callbacks
 class SMA(Bot):
     def __init__(self):
-        Bot.__init__(self, ['2h'])
+        Bot.__init__(self, ['15m'])
 
     def options(self):
         return {

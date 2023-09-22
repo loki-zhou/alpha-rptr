@@ -29,7 +29,8 @@ class MACDLongOnly(Bot):
     leverage = 1
 
     def __init__(self):
-        Bot.__init__(self, ['1d'])
+        # Bot.__init__(self, ['1d'])
+        Bot.__init__(self, ['15m'])
         self.supertrend = None
 
     def ohlcv_len(self):

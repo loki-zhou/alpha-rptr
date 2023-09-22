@@ -27,6 +27,7 @@ from src.gmail_sub import GmailSub
 import src.strategies.legendary_ta as lta
 import pandas_ta as ta
 import numpy as np
+import src.strategies.register_ray
 
 windows_size = 50
 
@@ -61,8 +62,7 @@ CustomStrategy = ta.Strategy(
     ]
 )
 
-checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_0516a_00000_0_2023-09-21_09-41-44\checkpoint_000230"
-algo = Algorithm.from_checkpoint(checkpoint_path)
+
 
 # Candle tester
 class RLTrader(Bot):
@@ -70,7 +70,9 @@ class RLTrader(Bot):
         Bot.__init__(self, ['15m'])
 
         self.lstmstate = [np.zeros([256], np.float32) for _ in range(2)]
-
+        self.prev_a = 0
+        checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_d67f1_00000_0_2023-09-21_15-52-40\checkpoint_002910"
+        self.algo = Algorithm.from_checkpoint(checkpoint_path)
     # this is for parameter optimization in hyperopt mode
     def options(self):
         return {}
@@ -86,7 +88,13 @@ class RLTrader(Bot):
         # logger.info(f"volume: {volume[-1]}")
         obs = self.create_feature(open, close, high, low, volume)
         action = self.predict(obs)
-        logger.info(f"action: {action}")
+        # logger.info(f"close: {close[-1]},     action: {action}")
+
+        lot = self.exchange.get_lot()
+        if action == 1:
+            self.exchange.entry("Long", True, lot, round_decimals=3)
+        elif action == 0:
+            self.exchange.close_all()
 
     def create_feature(self, open, close, high, low, volume):
         df = pd.DataFrame(
@@ -115,6 +123,6 @@ class RLTrader(Bot):
         return _obs_array[[-1]]
 
     def predict(self, obs):
-        action, self.lstmstate, _ = algo.compute_single_action(
-            observation=obs, state=self.lstmstate)
-        return action
+        self.prev_a, self.lstmstate, _ = self.algo.compute_single_action(
+            observation=obs, state=self.lstmstate, prev_action=self.prev_a, prev_reward=0)
+        return self.prev_a
