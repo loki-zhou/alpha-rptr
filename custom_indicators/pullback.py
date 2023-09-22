@@ -50,24 +50,22 @@ def detect_pullback(df: DataFrame, periods=30, method='pct_outlier'):
 
     df['pullback_flag']: 1 (Outlier Up) / -1 (Outlier Down)
     """
-    if method == 'stdev_outlier':
-        outlier_threshold = 2.0
-        df['dif'] = df['close'] - df['close'].shift(1)
-        df['dif_squared_sum'] = (df['dif'] ** 2).rolling(window=periods + 1).sum()
-        df['std'] = np.sqrt((df['dif_squared_sum'] - df['dif'].shift(0) ** 2) / (periods - 1))
-        df['pb_zscore'] = df['dif'] / df['std']
 
 
-    if method == 'pct_outlier':
-        outlier_threshold = 2.0
-        df["pb_pct_change"] = df["close"].pct_change()
-        df['pb_zscore'] = zscore(df, window=periods, col='pb_pct_change')
+    pb_dif = df['close'] - df['close'].shift(1)
+    pb_dif_squared_sum = (pb_dif ** 2).rolling(window=periods + 1).sum()
+    pb_std = np.sqrt((pb_dif_squared_sum- pb_dif.shift(0) ** 2) / (periods - 1))
+    df['feature_pb_stdev_outlier'] = pb_dif / pb_std
+    df["feature_pb_pct_change"] = df["close"].pct_change()
+    df['feature_pb_pct_outlier'] = zscore(df, window=periods, col='feature_pb_pct_change')
+    df['feature_pb_candle_body'] = (df['close'] - df['open']) / (df['high']-df['low'])
 
-    if method == 'candle_body':
-        pullback_pct = 1.0
-        df['change'] = df['close'] - df['open']
-        df['pullback'] = (df['change'] / df['open']) * 100
-
-    df['pullback_flag'] = np.where(df['pb_zscore'] >= outlier_threshold, 1, 0)
-    df['pullback_flag'] = np.where(df['pb_zscore'] <= -outlier_threshold, -1, df['pullback_flag'])
     return df
+
+
+if __name__ == "__main__":
+    from loaddata import test_data
+
+    df = test_data()
+    df = detect_pullback(df)
+    print(df.tail())
