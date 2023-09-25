@@ -4,15 +4,15 @@ import numpy as np
 from src.indicators import sma, ema
 
 def true_range(dataframe):
-    prev_close = dataframe['close'].shift()
-    tr = pd.concat([dataframe['high'] - dataframe['low'], abs(dataframe['high'] - prev_close), abs(dataframe['low'] - prev_close)], axis=1).max(axis=1)
+    prev_close = dataframe['normal_close'].shift()
+    tr = pd.concat([dataframe['normal_high'] - dataframe['normal_low'], abs(dataframe['normal_high'] - prev_close), abs(dataframe['normal_low'] - prev_close)], axis=1).max(axis=1)
     return tr
 
 
 def pinbar(df: DataFrame):
-    low = df['low']
-    high = df['high']
-    close = df['close']
+    low = df['normal_low']
+    high = df['normal_high']
+    close = df['normal_close']
     tr = true_range(df)
 
     df['feature_pinbar'] = 0
@@ -31,7 +31,8 @@ def pinbar(df: DataFrame):
 
 if __name__ == "__main__":
     from loaddata import test_data
-
+    from normalization import highlow_ochlv
     df = test_data()
+    df = highlow_ochlv(df)
     df = pinbar(df)
     print(df.tail())

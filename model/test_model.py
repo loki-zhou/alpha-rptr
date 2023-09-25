@@ -54,7 +54,7 @@ def create_env(config):
     )
     env.add_metric('Position Changes', lambda history : f"{ 100*np.sum(np.diff(history['position']) != 0)/len(history['position']):5.2f}%" )
     env.add_metric('Max Drawdown', max_drawdown)
-    env = gym.wrappers.NormalizeObservation(env)
+    # env = gym.wrappers.NormalizeObservation(env)
     return env
 
 from ray.tune.registry import register_env
@@ -69,7 +69,7 @@ from ray.rllib.algorithms.algorithm import Algorithm
 LSTM_CELL_SIZE = 256
 def test():
     # checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_1ab4e_00000_0_2023-09-13_18-34-23\checkpoint_000612"
-    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_3d9d9_00000_0_2023-09-22_16-08-40\checkpoint_000320"
+    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_0f650_00000_0_2023-09-22_18-16-14\checkpoint_010480"
 
     algo = Algorithm.from_checkpoint(checkpoint_path)
     env = create_env(0)
