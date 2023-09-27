@@ -37,14 +37,14 @@ def exhaustion_bars(dataframe, maj_qual=6, maj_len=12, min_qual=6, min_len=12, c
 
     bindex_maj, sindex_maj, trend_maj = 0, 0, 0
     bindex_min, sindex_min = 0, 0
-    dataframe["leledc_major"] = 1
-    dataframe["leledc_minor"] = 1
+    leledc_major = np.full((len(dataframe),),np.nan)
+    leledc_minor = np.full((len(dataframe),),np.nan)
     for i in range(len(dataframe)):
         close = dataframe['close'][i]
 
         if i < 1 or i - core_length < 0:
-            dataframe.iloc[i]['leledc_major'] = np.nan
-            dataframe.iloc[i]['leledc_minor'] = 0
+            leledc_major[i] = np.nan
+            leledc_minor[i] = 0
             continue
 
         bindex_maj, sindex_maj = np.nan_to_num(bindex_maj), np.nan_to_num(sindex_maj)
@@ -65,19 +65,20 @@ def exhaustion_bars(dataframe, maj_qual=6, maj_len=12, min_qual=6, min_len=12, c
                                                                                                i - maj_len:i].min():
             sindex_maj, trend_maj, update_major = 0, -1, True
 
-        dataframe.loc[i, 'leledc_major'] = trend_maj if update_major else np.nan if trend_maj == 0 else trend_maj
+        leledc_major[i] = trend_maj if update_major else np.nan if trend_maj == 0 else trend_maj
 
         if bindex_min > min_qual and close < dataframe['open'][i] and dataframe['high'][i] >= dataframe['high'][
                                                                                               i - min_len:i].max():
             bindex_min = 0
-            dataframe.loc[i, 'leledc_minor'] = -1
+            leledc_minor[i] = -1
         elif sindex_min > min_qual and close > dataframe['open'][i] and dataframe['low'][i] <= dataframe['low'][
                                                                                                i - min_len:i].min():
             sindex_min = 0
-            dataframe.loc[i, 'leledc_minor'] = 1
+            leledc_minor[i] = 1
         else:
-            dataframe.loc[i, 'leledc_minor'] = 0
-
+            leledc_minor[i] = 0
+    dataframe['leledc_major'] = leledc_major
+    dataframe['leledc_minor'] = leledc_minor
     return dataframe
 
 if __name__ == "__main__":
