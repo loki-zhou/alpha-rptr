@@ -7,7 +7,7 @@ import src.strategies.legendary_ta as lta
 import pandas_ta as ta
 from pandas_ta.statistics import zscore
 import akshare as ak
-
+from custom_indicators import normalization
 windows_size = 50
 
 CustomStrategy = ta.Strategy(
@@ -42,11 +42,7 @@ CustomStrategy = ta.Strategy(
 )
 
 def load_data():
-    # df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
-
-    df = pd.read_csv(r"D:\rl\alpha-rptr\ohlc\binance_futures\BTCUSDT\['15m']\data.csv", parse_dates=["time"], index_col="time")
-    df = df.tz_localize(None)
-    df.rename(columns={"time": "date"})
+    df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
     # df = ak.stock_zh_a_daily("sh601318", start_date="20200101")
     # df.set_index("date")
     # df = pd.read_pickle("./data/binance-BTCUSDT-1h.pkl")
@@ -59,23 +55,25 @@ def load_data():
     # df.sort_index(inplace=True)
     # df.dropna(inplace=True)
     # df.drop_duplicates(inplace=True)
-    df["feature_return_close"] = df["close"].pct_change()
-    df["feature_diff_open"] = df["open"] / df["close"]
-    df["feature_diff_high"] = df["high"] / df["close"]
-    df["feature_diff_low"] = df["low"] / df["close"]
-    df["feature_diff_volume"] = df["volume"] / df["volume"].rolling(7 * 24).max()
+    # df["feature_return_close"] = df["close"].pct_change()
+    # df["feature_diff_open"] = df["open"] / df["close"]
+    # df["feature_diff_high"] = df["high"] / df["close"]
+    # df["feature_diff_low"] = df["low"] / df["close"]
+    # df["feature_diff_volume"] = df["volume"] / df["volume"].rolling(7 * 24).max()
     # cta.NormalizedScore(df, 30*2)
-    df = lta.smi_momentum(df)
+    # df = lta.smi_momentum(df)
     # lta.pinbar(df, df["feature_smi"])
     # df["feature_smi"] = df["feature_smi"] / 100
 
-    df.ta.cores = 0
-    df.ta.strategy(CustomStrategy)
-    df['feature_z_close'] = zscore(df['close'], length=windows_size )
-    df['feature_z_open'] = zscore(df['open'], length=windows_size )
-    df['feature_z_high'] = zscore(df['high'], length=windows_size )
-    df['feature_z_low'] = zscore(df['low'], length=windows_size )
-    df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
+    # df.ta.cores = 0
+    # df.ta.strategy(CustomStrategy)
+    # df['feature_z_close'] = zscore(df['close'], length=windows_size )
+    # df['feature_z_open'] = zscore(df['open'], length=windows_size )
+    # df['feature_z_high'] = zscore(df['high'], length=windows_size )
+    # df['feature_z_low'] = zscore(df['low'], length=windows_size )
+    # df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
+
+    df = normalization.highlow_ochlv(df, windows_size = windows_size)
 
     df.dropna(inplace=True)
     return df
@@ -177,7 +175,7 @@ def train():
             # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
             "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
             "model": {
-                "use_lstm": True,
+                "use_lstm": False,
                 "lstm_cell_size": LSTM_CELL_SIZE,
                 "lstm_use_prev_action": True,
                 "lstm_use_prev_reward": True,
@@ -233,7 +231,7 @@ from ray.rllib.algorithms.algorithm import Algorithm
 
 def test():
     # checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_1ab4e_00000_0_2023-09-13_18-34-23\checkpoint_000612"
-    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_d67f1_00000_0_2023-09-21_15-52-40\checkpoint_002910"
+    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_66fdb_00000_0_2023-12-12_18-22-50\checkpoint_005000"
 
     algo = Algorithm.from_checkpoint(checkpoint_path)
     env = create_env(0)

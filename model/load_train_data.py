@@ -18,7 +18,7 @@ def load_data():
     df.dropna(inplace=True)
     df.drop_duplicates(inplace=True)
 
-    return feature_deal(df)
+    return df
 
 
 
@@ -27,8 +27,8 @@ def load_test_data():
     # df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
     # df = ak.stock_zh_a_daily("sh601318", start_date="20200101")
     # df.set_index("date")
-    # df = pd.read_pickle("./data/binance-BTCUSDT-1h.pkl")
-    df = pd.read_csv("./data/BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
+    df = pd.read_pickle("./data/binance-BTCUSDT-1h.pkl")
+    # df = pd.read_csv("./data/BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
     df.sort_index(inplace=True)
     df.dropna(inplace=True)
     df.drop_duplicates(inplace=True)
@@ -58,3 +58,4 @@ def feature_deal(df):
 if __name__ == "__main__":
     df = load_data()
     print(df.tail())
+    print(df.head())

@@ -6,6 +6,7 @@ from gym_trading_env.environments import TradingEnv
 import src.strategies.legendary_ta as lta
 import pandas_ta as ta
 from pandas_ta.statistics import zscore
+from custom_indicators import normalization
 
 windows_size = 50
 
@@ -54,24 +55,27 @@ def load_data():
     # df.sort_index(inplace=True)
     # df.dropna(inplace=True)
     # df.drop_duplicates(inplace=True)
-    df["feature_return_close"] = df["close"].pct_change()
-    df["feature_diff_open"] = df["open"] / df["close"]
-    df["feature_diff_high"] = df["high"] / df["close"]
-    df["feature_diff_low"] = df["low"] / df["close"]
-    df["feature_diff_volume"] = df["volume"] / df["volume"].rolling(7 * 24).max()
+    # df["feature_return_close"] = df["close"].pct_change()
+    # df["feature_diff_open"] = df["open"] / df["close"]
+    # df["feature_diff_high"] = df["high"] / df["close"]
+    # df["feature_diff_low"] = df["low"] / df["close"]
+    # df["feature_diff_volume"] = df["volume"] / df["volume"].rolling(7 * 24).max()
     # cta.NormalizedScore(df, 30*2)
-    df = lta.smi_momentum(df)
+    # df = lta.smi_momentum(df)
     # lta.pinbar(df, df["feature_smi"])
     # df["feature_smi"] = df["feature_smi"] / 100
 
-    df.ta.cores = 0
-    df.ta.strategy(CustomStrategy)
-    df['feature_z_close'] = zscore(df['close'], length=windows_size )
-    df['feature_z_open'] = zscore(df['open'], length=windows_size )
-    df['feature_z_high'] = zscore(df['high'], length=windows_size )
-    df['feature_z_low'] = zscore(df['low'], length=windows_size )
-    df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
+    # df.ta.cores = 0
+    # df.ta.strategy(CustomStrategy)
+    # df['feature_z_close'] = zscore(df['close'], length=windows_size )
+    # df['feature_z_open'] = zscore(df['open'], length=windows_size )
+    # df['feature_z_high'] = zscore(df['high'], length=windows_size )
+    # df['feature_z_low'] = zscore(df['low'], length=windows_size )
+    # df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
 
+    # df = normalization.highlow_ochlv(df, windows_size = windows_size)
+    df = normalization.highlow_winodws_ochlv(df, windows_size = windows_size)
+    df = normalization.logged_diff(df)
     df.dropna(inplace=True)
     return df
 
@@ -194,7 +198,7 @@ def train():
 
     stop = {
         # "training_iteration": args.stop_iters,
-        "timesteps_total": 10000_0000,
+        "timesteps_total": 2000_0000,
         "episode_reward_mean": 1000,
     }
 
@@ -207,7 +211,9 @@ def train():
                                                             verbose=2,
                                                             local_dir = "./ray_results")
     )
-    #tuner = tuner.restore(r"D:\rl\backtrader\example\gym\ray_results\PPO")
+    # tuner = tuner.restore(r"D:\rl\backtrader\example\gym\ray_results\PPO")
+    # tuner = tuner.restore(r"D:\rl\alpha-rptr\model\ray_results\PPO")
+
     # tuner.fit()
 
     results = tuner.fit()
@@ -255,5 +261,6 @@ def test():
 # tensorboard.exe  --logdir model/ray_results/PPO/
 #pip install  ray[rllib]==2.4.0
 if __name__ == '__main__':
+    # load_data()
     train()
     # test()
