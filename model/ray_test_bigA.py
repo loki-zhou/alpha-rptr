@@ -14,39 +14,39 @@ CustomStrategy = ta.Strategy(
     name="Momo and Volatility",
     description="SMA 50,200, BBANDS, RSI, MACD and Volume SMA 20",
     ta=[
-        {"kind": "sma", "length": 30,"prefix": "feature"},
-        {"kind": "sma", "length": 50,"prefix": "feature"},
-        {"kind": "sma", "length": 200, "prefix": "feature"},
-        {"kind": "bbands", "length": 20, "prefix": "feature"},
-        {"kind": "rsi", "prefix": "feature"},
-        {"kind": "macd", "fast": 8, "slow": 21, "prefix": "feature"},
-        {"kind": "sma", "close": "volume", "length": 20, "prefix": "feature_VOLUME"},
-        {"kind": "mfi", "prefix": "feature"},
-        {"kind": "tsi", "prefix": "feature"},
-        {"kind": "uo", "prefix": "feature"},
-        {"kind": "ao", "prefix": "feature"},
-        {"kind": "vortex", "prefix": "feature"},
-        {"kind": "trix", "prefix": "feature"},
-        {"kind": "massi", "prefix": "feature"},
-        {"kind": "cci", "prefix": "feature"},
-        # {"kind": "dpo", "prefix": "feature"},
-        {"kind": "kst", "prefix": "feature"},
-        {"kind": "aroon", "prefix": "feature"},
-        {"kind": "kc", "prefix": "feature"},
-        {"kind": "donchian", "prefix": "feature"},
-        {"kind": "cmf", "prefix": "feature"},
-        {"kind": "efi", "prefix": "feature"},
-        {"kind": "pvt", "prefix": "feature"},
-        {"kind": "nvi", "prefix": "feature"},
+        # {"kind": "sma", "length": 30,"prefix": "feature"},
+        # {"kind": "sma", "length": 50,"prefix": "feature"},
+        # {"kind": "sma", "length": 200, "prefix": "feature"},
+        # {"kind": "bbands", "length": 20, "prefix": "feature"},
+        # {"kind": "rsi", "prefix": "feature"},
+        # {"kind": "macd", "fast": 8, "slow": 21, "prefix": "feature"},
+        # {"kind": "sma", "close": "volume", "length": 20, "prefix": "feature_VOLUME"},
+        # {"kind": "mfi", "prefix": "feature"},
+        # {"kind": "tsi", "prefix": "feature"},
+        # {"kind": "uo", "prefix": "feature"},
+        # {"kind": "ao", "prefix": "feature"},
+        # {"kind": "vortex", "prefix": "feature"},
+        # {"kind": "trix", "prefix": "feature"},
+        # {"kind": "massi", "prefix": "feature"},
+        # {"kind": "cci", "prefix": "feature"},
+        {"kind": "dpo", "prefix": "feature"},
+        # {"kind": "kst", "prefix": "feature"},
+        # {"kind": "aroon", "prefix": "feature"},
+        # {"kind": "kc", "prefix": "feature"},
+        # {"kind": "donchian", "prefix": "feature"},
+        # {"kind": "cmf", "prefix": "feature"},
+        # {"kind": "efi", "prefix": "feature"},
+        # {"kind": "pvt", "prefix": "feature"},
+        # {"kind": "nvi", "prefix": "feature"},
     ]
 )
 
 def load_data():
-    df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
+    # df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
     # df = ak.stock_zh_a_daily("sh601318", start_date="20200101")
     # df.set_index("date")
     # df = pd.read_pickle("./data/binance-BTCUSDT-1h.pkl")
-    # df = pd.read_csv("./data/BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
+    df = pd.read_csv("./data/BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
     df.sort_index(inplace=True)
     df.dropna(inplace=True)
     df.drop_duplicates(inplace=True)
@@ -65,7 +65,7 @@ def load_data():
     # lta.pinbar(df, df["feature_smi"])
     # df["feature_smi"] = df["feature_smi"] / 100
 
-    # df.ta.cores = 0
+    df.ta.cores = 0
     # df.ta.strategy(CustomStrategy)
     # df['feature_z_close'] = zscore(df['close'], length=windows_size )
     # df['feature_z_open'] = zscore(df['open'], length=windows_size )
@@ -73,8 +73,8 @@ def load_data():
     # df['feature_z_low'] = zscore(df['low'], length=windows_size )
     # df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
 
-    df = normalization.highlow_ochlv(df, windows_size = windows_size)
-
+    df = normalization.highlow_winodws_ochlv(df, windows_size = windows_size)
+    # df = normalization.logged_diff(df)
     df.dropna(inplace=True)
     return df
 
@@ -175,7 +175,8 @@ def train():
             # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
             "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
             "model": {
-                "use_lstm": False,
+                "conv_filters": None,
+                "use_lstm": True,
                 "lstm_cell_size": LSTM_CELL_SIZE,
                 "lstm_use_prev_action": True,
                 "lstm_use_prev_reward": True,
@@ -230,8 +231,7 @@ def train2():
 from ray.rllib.algorithms.algorithm import Algorithm
 
 def test():
-    # checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_1ab4e_00000_0_2023-09-13_18-34-23\checkpoint_000612"
-    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_66fdb_00000_0_2023-12-12_18-22-50\checkpoint_005000"
+    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_081ae_00000_0_2023-12-14_18-17-48\checkpoint_003070"
 
     algo = Algorithm.from_checkpoint(checkpoint_path)
     env = create_env(0)

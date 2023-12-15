@@ -26,7 +26,8 @@ def highlow_winodws_ochlv(df, windows_size = 100):
     df['feature_highlow_high'] = (df['high'] - ll) / scale
     df['feature_highlow_close'] = (df['close'] - ll) / scale
     df['feature_highlow_volume'] = (df['volume']-vll)/vscale
-    return df
+    columns_to_round = {'feature_highlow_open': 2, 'feature_highlow_low': 2, "feature_highlow_high": 2, "feature_highlow_close": 2, "feature_highlow_volume":2}
+    return df.round(columns_to_round)
 
 def logged_diff(df):
     for column in ["open","close", "high", "low", "volume"]:

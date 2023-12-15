@@ -36,14 +36,6 @@ def load_test_data():
     return feature_deal(df)
 
 
-def normal_ochlv(df):
-    df['normal_close'] = zscore(df['close'], length=windows_size )
-    df['normal_open'] = zscore(df['open'], length=windows_size )
-    df['normal_high'] = zscore(df['high'], length=windows_size )
-    df['normal_low'] = zscore(df['low'], length=windows_size )
-    df['normal_volume'] = zscore(df['volume'], length=windows_size )
-    return df
-
 def feature_deal(df):
     df = normal_ochlv(df)
     df = pa.pinbar(df)
