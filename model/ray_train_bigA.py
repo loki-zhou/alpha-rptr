@@ -75,7 +75,7 @@ def load_data():
     # df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
 
 
-    df = normalization.highlow_winodws_ochlv(df, windows_size = windows_size)
+    df = normalization.normal_deal(df, windows_size = windows_size)
     # df = normalization.logged_diff(df)
     df.dropna(inplace=True)
     return df
@@ -84,7 +84,7 @@ def reward_function(history):
     return np.log(history["portfolio_valuation", -1] / history["portfolio_valuation", -2]) #log (p_t / p_t-1 )
 
 def reward_sortino_function(history):
-    returns = pd.Series(history["portfolio_valuation"][-(15+1):]).pct_change().dropna()
+    returns = pd.Series(history["portfolio_valuation"][-(windows_size+1):]).pct_change().dropna()
     downside_returns = returns.copy()
     downside_returns[returns < 0] = returns ** 2
     expected_return = returns.mean()

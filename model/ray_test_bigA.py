@@ -42,11 +42,11 @@ CustomStrategy = ta.Strategy(
 )
 
 def load_data():
-    # df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
+    df = ak.stock_zh_a_daily("sz000625", start_date="20200101")
     # df = ak.stock_zh_a_daily("sh601318", start_date="20200101")
     # df.set_index("date")
     # df = pd.read_pickle("./data/binance-BTCUSDT-1h.pkl")
-    df = pd.read_csv("./data/BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
+    # df = pd.read_csv("./data/BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
     df.sort_index(inplace=True)
     df.dropna(inplace=True)
     df.drop_duplicates(inplace=True)
@@ -231,7 +231,7 @@ def train2():
 from ray.rllib.algorithms.algorithm import Algorithm
 
 def test():
-    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_081ae_00000_0_2023-12-14_18-17-48\checkpoint_003070"
+    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_6e958_00000_0_2023-12-19_17-03-10\checkpoint_003340"
 
     algo = Algorithm.from_checkpoint(checkpoint_path)
     env = create_env(0)

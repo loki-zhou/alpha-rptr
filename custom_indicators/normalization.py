@@ -36,3 +36,13 @@ def logged_diff(df):
         cum_min = ld.cummin()
         df["feature_logged_diff_" + column] = (ld - cum_min) / (cum_max - cum_min)
     return df
+
+def normal_deal(df, windows_size = 50):
+
+    df['feature_open'] = df['open']/100000
+    df['feature_low'] = df['low']/100000
+    df['feature_high'] = df['high']/100000
+    df['feature_close'] =  df['close']/100000
+    df['feature_volume'] = df['volume']/100000
+
+    return df
