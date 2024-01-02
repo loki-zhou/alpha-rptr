@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import gymnasium as gym
 from gym_trading_env.environments import TradingEnv
-import src.strategies.legendary_ta as lta
+# import src.strategies.legendary_ta as lta
 import pandas_ta as ta
 from pandas_ta.statistics import zscore
 import akshare as ak
@@ -65,7 +65,7 @@ def load_data():
     # lta.pinbar(df, df["feature_smi"])
     # df["feature_smi"] = df["feature_smi"] / 100
 
-    df.ta.cores = 0
+    # df.ta.cores = 0
     # df.ta.strategy(CustomStrategy)
     # df['feature_z_close'] = zscore(df['close'], length=windows_size )
     # df['feature_z_open'] = zscore(df['open'], length=windows_size )
@@ -73,8 +73,9 @@ def load_data():
     # df['feature_z_low'] = zscore(df['low'], length=windows_size )
     # df['feature_z_volume'] = zscore(df['volume'], length=windows_size )
 
-    df = normalization.highlow_winodws_ochlv(df, windows_size = windows_size)
+    # df = normalization.highlow_winodws_ochlv(df, windows_size = windows_size)
     # df = normalization.logged_diff(df)
+    df = normalization.create_alphas(df)
     df.dropna(inplace=True)
     return df
 
@@ -231,7 +232,7 @@ def train2():
 from ray.rllib.algorithms.algorithm import Algorithm
 
 def test():
-    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_6e958_00000_0_2023-12-19_17-03-10\checkpoint_003340"
+    checkpoint_path = r"D:\rl\alpha-rptr\model\ray_results\PPO\PPO_TradingEnv2_84993_00000_0_2023-12-28_18-33-19\checkpoint_017660"
 
     algo = Algorithm.from_checkpoint(checkpoint_path)
     env = create_env(0)

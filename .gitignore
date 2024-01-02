@@ -15,3 +15,5 @@ trades.csv
 logs/
 ray_results/
 render_logs/
+tlog/
+monitor_log/

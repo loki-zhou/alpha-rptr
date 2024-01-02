@@ -46,3 +46,43 @@ def normal_deal(df, windows_size = 50):
     df['feature_volume'] = df['volume']/100000
 
     return df
+
+from alphas import feature_generation, utils
+def create_alphas(df):
+    df['returns'] = utils.returns(df)
+    df['vwap'] = utils.vwap(df)
+    df['feature_alpha1'] = feature_generation.alpha1(df)
+    df['feature_alpha2'] = feature_generation.alpha2(df)
+    df['feature_alpha3'] = feature_generation.alpha3(df)
+    df['feature_alpha4'] = feature_generation.alpha4(df)
+    df['feature_alpha6'] = feature_generation.alpha6(df)
+    df['feature_alpha9'] = feature_generation.alpha9(df)
+    df['feature_alpha12'] = feature_generation.alpha12(df)
+    df['feature_alpha14'] = feature_generation.alpha14(df)
+    df['feature_alpha15'] = feature_generation.alpha15(df)
+    df['feature_alpha16'] = feature_generation.alpha16(df)
+    df['feature_alpha17'] = feature_generation.alpha17(df)
+
+    df['feature_alpha21'] = feature_generation.alpha21(df)
+    df['feature_alpha22'] = feature_generation.alpha22(df)
+    df['feature_alpha23'] = feature_generation.alpha23(df)
+    df['feature_alpha24'] = feature_generation.alpha24(df)
+    df['feature_alpha26'] = feature_generation.alpha26(df)
+    df['feature_alpha35'] = feature_generation.alpha35(df)
+
+
+    return df
+
+
+if __name__ == '__main__':
+    import pandas as pd
+
+    # df = pd.read_csv(r"D:\rl\alpha-rptr\ohlc\binance_futures\BTCUSDT\['15m']\data.csv", parse_dates=["time"],
+    #                  index_col="time")
+    df = pd.read_csv(r"D:\rl\alpha-rptr\model\data\BTC_USD-Hourly.csv", parse_dates=["date"], index_col="date")
+    df.sort_index(inplace=True)
+    df.dropna(inplace=True)
+    df.drop_duplicates(inplace=True)
+
+    df = create_alphas(df)
+    df.dropna(inplace=True)

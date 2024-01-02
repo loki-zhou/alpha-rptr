@@ -9,6 +9,15 @@ from gym_trading_env.environments import TradingEnv
 from custom_indicators import normalization
 from ray.rllib.models.utils import get_activation_fn, get_filter_config
 
+from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3 import PPO
+from sb3_contrib import RecurrentPPO
+from sb3_contrib import QRDQN
+
 windows_size = 50
 
 # CustomStrategy = ta.Strategy(
@@ -107,7 +116,7 @@ def max_drawdown(history):
 
 
 
-def create_env(config):
+def create_env():
     df = load_data()
     env = TradingEnv(
         name="BTCUSD",
@@ -131,141 +140,85 @@ def create_env(config):
     env = gym.wrappers.NormalizeObservation(env)
     return env
 
-from ray.tune.registry import register_env
-register_env("TradingEnv2", create_env)
+def create_test_env():
+    df = load_data()
+    env = TradingEnv(
+        name="BTCUSD",
+        df=df,
+        windows=1,
+        # positions=[-1, -0.5, 0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
+        # positions=[0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
+        positions=[0,  1],  # From -1 (=SHORT), to +1 (=LONG)
+        # initial_position = 'random', #Initial position
+        dynamic_feature_functions=[],
+        initial_position=0,  # Initial position
+        trading_fees= 0.01 / 100,  # 0.01% per stock buy / sell
+        borrow_interest_rate=0,  # per timestep (= 1h here)
+        reward_function=reward_sortino_function,
+        portfolio_initial_value=10000,  # in FIAT (here, USD)
+        # max_episode_duration = 2400,
+        # max_episode_duration=500,
+    )
+    env.add_metric('Position Changes', lambda history : f"{ 100*np.sum(np.diff(history['position']) != 0)/len(history['position']):5.2f}%" )
+    env.add_metric('Max Drawdown', max_drawdown)
+    env = gym.wrappers.NormalizeObservation(env)
+    return env
 
-# stop = {
-#     "training_iteration": args.stop_iters,
-#     "timesteps_total": args.stop_timesteps,
-#     "episode_reward_mean": args.stop_reward,
-# }
+monitor_dir = r'./monitor_log/ppo/'
+os.makedirs(monitor_dir, exist_ok=True)
 
-
-import ray
-from ray import tune, air
-from model.ray_callback import TradeMetricsCallbacks
-
-LSTM_CELL_SIZE = 256
 def train():
-    ray.init(num_cpus=8)
-
-    configs = {
-        "PPO": {
-            "num_sgd_iter": 16,
-            "model": {
-                "vf_share_layers": True,
-            },
-            "vf_loss_coeff": 0.0001,
-            "lambda": 0.95,
-            "gamma": 0.99,
-        },
-        "IMPALA": {
-            "num_workers": 2,
-            "num_gpus": 0,
-            "vf_loss_coeff": 0.01,
-        },
-
-    }
-
-    config = dict(
-        configs["PPO"],
-        **{
-            "env": "TradingEnv2",
-            # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
-            "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
-            # "model": {
-            #     "use_lstm": True,
-            #     "max_seq_len": 20,
-            #     "lstm_cell_size": LSTM_CELL_SIZE,
-            #     "lstm_use_prev_action": True,
-            #     "lstm_use_prev_reward": True,
-            # },
-            "framework": "torch",
-            "_enable_learner_api": False,
-            "_enable_rl_module_api": False,
-            # "observation_filter": "MeanStdFilter",
-            "lr": 8e-6,
-            "lr_schedule": [
-                [0, 1e-1],
-                [int(1e3), 1e-2],
-                [int(1e4), 1e-3],
-                [int(1e5), 1e-4],
-                [int(1e6), 1e-5],
-                [int(1e7), 1e-6],
-                [int(1e8), 1e-7]
-            ],
-            "callbacks": TradeMetricsCallbacks,
-            "observation_filter": "MeanStdFilter",  # ConcurrentMeanStdFilter, NoFilter
-        }
+    # env = create_env(3)
+    # training_envs = gym.vector.SyncVectorEnv(
+    #     [lambda: create_env() for _ in range(5)])
+    training_envs = create_env()
+    model = PPO("MlpPolicy", training_envs, tensorboard_log="./tlog/ppo/", verbose=1, batch_size= 512)
+    # model = PPO("MlpPolicy", training_envs, verbose=1, batch_size=512)
+    #model = QRDQN("MlpPolicy", env, verbose=1)
+    # model = RecurrentPPO("MlpLstmPolicy", env,
+    #                      batch_size=512,
+    #                      # n_steps=128,
+    #                      # n_epochs=10,
+    #                      # policy_kwargs={'enable_critic_lstm': False, 'lstm_hidden_size': 128},
+    #                      tensorboard_log="./tlog/ppo/",
+    #                      verbose=1)
+    #callback = SaveOnBestTrainingRewardCallback(check_freq=10, log_dir=monitor_dir)
+    checkpoint_callback = CheckpointCallback(
+        save_freq=20000,
+        save_path=monitor_dir,
+        name_prefix="rl_model",
+        save_replay_buffer=True,
+        save_vecnormalize=True,
     )
+    # model.set_parameters(monitor_dir + "rl_model_20000000_steps.zip")
+    model.learn(total_timesteps=200_0000, callback=checkpoint_callback)
+    # model.learn(total_timesteps=200_0000)
 
-    stop = {
-        # "training_iteration": args.stop_iters,
-        "timesteps_total": 10000_0000,
-        "episode_reward_mean": 1000,
-    }
-
-    tuner = tune.Tuner(
-        "PPO", param_space=config, run_config=air.RunConfig(stop=stop,
-                                                            checkpoint_config=air.CheckpointConfig(
-                                                                num_to_keep= 2,
-                                                                checkpoint_frequency = 10,
-                                                                checkpoint_at_end=True),
-                                                            verbose=2,
-                                                            local_dir = "./ray_results")
-    )
-    # tuner = tuner.restore(r"D:\rl\backtrader\example\gym\ray_results\PPO")
-    # tuner = tuner.restore(r"D:\rl\alpha-rptr\model\ray_results\PPO")
-
-    # tuner.fit()
-
-    results = tuner.fit()
-
-    ckpt = results.get_best_result(metric="episode_reward_mean", mode="max").checkpoint
-
-    print(ckpt)
-
-
-def train2():
-    pass
-
-from ray.rllib.algorithms.algorithm import Algorithm
 
 def test():
-    # checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_1ab4e_00000_0_2023-09-13_18-34-23\checkpoint_000612"
-    checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_ca408_00000_0_2023-09-15_14-47-51\checkpoint_000400"
-
-    algo = Algorithm.from_checkpoint(checkpoint_path)
-    env = create_env(0)
-
+    #model = QRDQN.load(monitor_dir + "rl_model_500000_steps.zip")
+    model = PPO.load(monitor_dir + "rl_model_2000000_steps.zip")
+    # model = RecurrentPPO.load(monitor_dir + "rl_model_2000000_steps.zip")
+    env = create_test_env()
+    model.set_env(env)
     done, truncated = False, False
-    obs, info = env.reset()
+    observation, info = env.reset()
     lstm_states = None
-    init_state = state = [
-     np.zeros([LSTM_CELL_SIZE], np.float32) for _ in range(2)
-    ]
-    prev_a = 0
-    prev_r = 0.0
+    episode_starts = np.ones((1,), dtype=bool)
     while not done and not truncated:
-        a, state_out, _ = algo.compute_single_action(
-            observation=obs, state=state, prev_action=prev_a, prev_reward=prev_r)
-        obs, reward, done, truncated, _ = env.step(a)
-        if done:
-            obs, info = env.reset()
-            state = init_state
-            prev_a = 0
-            prev_r = 0.0
-        else:
-            state = state_out
-            prev_a = a
-            prev_r = reward
+        action, _states = model.predict(observation)
+        #action = env.action_space.sample()
+        # action, lstm_states = model.predict(observation, state=lstm_states, episode_start=episode_starts, deterministic=True)
+        observation, reward, done, truncated, info = env.step(action)
     env.save_for_render(dir="./render_logs")
 
+
 # tensorboard.exe  --logdir model/ray_results/PPO/
+#tensorboard.exe --logdir model/tlog/ppo
 #pip install  ray[rllib]==2.4.0
 if __name__ == '__main__':
     # load_data()
-    train()
-    # test()
+    # train()
+    test()
     # env = create_env(0)
     # print(env.observation_space.shape)
