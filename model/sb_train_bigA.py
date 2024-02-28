@@ -17,6 +17,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3 import PPO
 from sb3_contrib import RecurrentPPO
 from sb3_contrib import QRDQN
+import torch
 
 windows_size = 50
 
@@ -88,6 +89,10 @@ def load_data():
     # df = normalization.logged_diff(df)
     df = normalization.create_alphas(df)
     df.dropna(inplace=True)
+
+    # nan_mask = torch.isnan(df)
+    # print("NaN值的位置：", nan_mask)
+
     return df
 
 def reward_function(history):
@@ -140,30 +145,6 @@ def create_env():
     env = gym.wrappers.NormalizeObservation(env)
     return env
 
-def create_test_env():
-    df = load_data()
-    env = TradingEnv(
-        name="BTCUSD",
-        df=df,
-        windows=1,
-        # positions=[-1, -0.5, 0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
-        # positions=[0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
-        positions=[0,  1],  # From -1 (=SHORT), to +1 (=LONG)
-        # initial_position = 'random', #Initial position
-        dynamic_feature_functions=[],
-        initial_position=0,  # Initial position
-        trading_fees= 0.01 / 100,  # 0.01% per stock buy / sell
-        borrow_interest_rate=0,  # per timestep (= 1h here)
-        reward_function=reward_sortino_function,
-        portfolio_initial_value=10000,  # in FIAT (here, USD)
-        # max_episode_duration = 2400,
-        # max_episode_duration=500,
-    )
-    env.add_metric('Position Changes', lambda history : f"{ 100*np.sum(np.diff(history['position']) != 0)/len(history['position']):5.2f}%" )
-    env.add_metric('Max Drawdown', max_drawdown)
-    env = gym.wrappers.NormalizeObservation(env)
-    return env
-
 monitor_dir = r'./monitor_log/ppo/'
 os.makedirs(monitor_dir, exist_ok=True)
 
@@ -173,6 +154,7 @@ def train():
     #     [lambda: create_env() for _ in range(5)])
     training_envs = create_env()
     model = PPO("MlpPolicy", training_envs, tensorboard_log="./tlog/ppo/", verbose=1, batch_size= 512)
+    # model = PPO("CnnPolicy", training_envs, tensorboard_log="./tlog/ppo/", verbose=1, batch_size=512)
     # model = PPO("MlpPolicy", training_envs, verbose=1, batch_size=512)
     #model = QRDQN("MlpPolicy", env, verbose=1)
     # model = RecurrentPPO("MlpLstmPolicy", env,
@@ -190,27 +172,9 @@ def train():
         save_replay_buffer=True,
         save_vecnormalize=True,
     )
-    # model.set_parameters(monitor_dir + "rl_model_20000000_steps.zip")
+    model.set_parameters(monitor_dir + "rl_model_2000000_steps.zip")
     model.learn(total_timesteps=200_0000, callback=checkpoint_callback)
     # model.learn(total_timesteps=200_0000)
-
-
-def test():
-    #model = QRDQN.load(monitor_dir + "rl_model_500000_steps.zip")
-    model = PPO.load(monitor_dir + "rl_model_2000000_steps.zip")
-    # model = RecurrentPPO.load(monitor_dir + "rl_model_2000000_steps.zip")
-    env = create_test_env()
-    model.set_env(env)
-    done, truncated = False, False
-    observation, info = env.reset()
-    lstm_states = None
-    episode_starts = np.ones((1,), dtype=bool)
-    while not done and not truncated:
-        action, _states = model.predict(observation)
-        #action = env.action_space.sample()
-        # action, lstm_states = model.predict(observation, state=lstm_states, episode_start=episode_starts, deterministic=True)
-        observation, reward, done, truncated, info = env.step(action)
-    env.save_for_render(dir="./render_logs")
 
 
 # tensorboard.exe  --logdir model/ray_results/PPO/
@@ -218,7 +182,7 @@ def test():
 #pip install  ray[rllib]==2.4.0
 if __name__ == '__main__':
     # load_data()
-    # train()
-    test()
+    train()
+    # test()
     # env = create_env(0)
     # print(env.observation_space.shape)

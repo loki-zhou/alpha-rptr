@@ -48,9 +48,9 @@ def normal_deal(df, windows_size = 50):
     return df
 
 from alphas import feature_generation, utils
-def create_alphas(df):
+def create_alphas1(df):
     df['returns'] = utils.returns(df)
-    df['vwap'] = utils.vwap(df)
+    #df['vwap'] = utils.vwap(df)
     df['feature_alpha1'] = feature_generation.alpha1(df)
     df['feature_alpha2'] = feature_generation.alpha2(df)
     df['feature_alpha3'] = feature_generation.alpha3(df)
@@ -68,11 +68,57 @@ def create_alphas(df):
     df['feature_alpha23'] = feature_generation.alpha23(df)
     df['feature_alpha24'] = feature_generation.alpha24(df)
     df['feature_alpha26'] = feature_generation.alpha26(df)
-    df['feature_alpha35'] = feature_generation.alpha35(df)
+
+
+
 
 
     return df
 
+def create_alphas(df):
+    df['returns'] = utils.returns(df)
+    #df['vwap'] = utils.vwap(df)
+    df['feature_alpha1'] = feature_generation.alpha1(df)
+    df['feature_alpha2'] = feature_generation.alpha2(df)
+    df['feature_alpha3'] = feature_generation.alpha3(df)
+    df['feature_alpha4'] = feature_generation.alpha4(df)
+    df['feature_alpha6'] = feature_generation.alpha6(df)
+    df['feature_alpha9'] = feature_generation.alpha9(df)
+    df['feature_alpha12'] = feature_generation.alpha12(df)
+    df['feature_alpha14'] = feature_generation.alpha14(df)
+    df['feature_alpha15'] = feature_generation.alpha15(df)
+    df['feature_alpha16'] = feature_generation.alpha16(df)
+    df['feature_alpha17'] = feature_generation.alpha17(df)
+
+    df['feature_alpha21'] = feature_generation.alpha21(df)
+    df['feature_alpha22'] = feature_generation.alpha22(df)
+    df['feature_alpha23'] = feature_generation.alpha23(df)
+    df['feature_alpha24'] = feature_generation.alpha24(df)
+    df['feature_alpha26'] = feature_generation.alpha26(df)
+
+    df['feature_alpha31'] = feature_generation.alpha31(df)
+    df['feature_alpha34'] = feature_generation.alpha34(df)
+    df['feature_alpha35'] = feature_generation.alpha35(df)
+
+    df['feature_alpha37'] = feature_generation.alpha37(df)
+    df['feature_alpha38'] = feature_generation.alpha38(df)
+
+    df['feature_alpha39'] = feature_generation.alpha39(df)
+    df['feature_alpha40'] = feature_generation.alpha40(df)
+    df['feature_alpha43'] = feature_generation.alpha43(df)
+    # ### df['feature_alpha45'] = feature_generation.alpha45(df)
+    df['feature_alpha46'] = feature_generation.alpha46(df)
+    df['feature_alpha49'] = feature_generation.alpha49(df)
+
+    # df['feature_alpha52'] = feature_generation.alpha52(df)
+    # df['feature_alpha53'] = feature_generation.alpha53(df)
+    df['feature_alpha54'] = feature_generation.alpha54(df)
+    # df['feature_alpha55'] = feature_generation.alpha55(df)
+    # df['feature_alpha60'] = feature_generation.alpha60(df)
+
+
+
+    return df
 
 if __name__ == '__main__':
     import pandas as pd

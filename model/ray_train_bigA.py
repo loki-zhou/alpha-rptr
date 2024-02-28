@@ -112,7 +112,7 @@ def create_env(config):
     env = TradingEnv(
         name="BTCUSD",
         df=df,
-        windows=1,
+        windows=10,
         # positions=[-1, -0.5, 0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
         # positions=[0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
         positions=[0,  1],  # From -1 (=SHORT), to +1 (=LONG)
@@ -173,13 +173,13 @@ def train():
             "env": "TradingEnv2",
             # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
             "num_gpus": int(os.environ.get("RLLIB_NUM_GPUS", "0")),
-            # "model": {
-            #     "use_lstm": True,
-            #     "max_seq_len": 20,
-            #     "lstm_cell_size": LSTM_CELL_SIZE,
-            #     "lstm_use_prev_action": True,
-            #     "lstm_use_prev_reward": True,
-            # },
+            "model": {
+                "use_lstm": True,
+                "max_seq_len": 20,
+                "lstm_cell_size": LSTM_CELL_SIZE,
+                "lstm_use_prev_action": True,
+                "lstm_use_prev_reward": True,
+            },
             "framework": "torch",
             "_enable_learner_api": False,
             "_enable_rl_module_api": False,
@@ -226,40 +226,6 @@ def train():
     print(ckpt)
 
 
-def train2():
-    pass
-
-from ray.rllib.algorithms.algorithm import Algorithm
-
-def test():
-    # checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_1ab4e_00000_0_2023-09-13_18-34-23\checkpoint_000612"
-    checkpoint_path = r"D:\rl\backtrader\example\gym\ray_results\PPO\PPO_TradingEnv2_ca408_00000_0_2023-09-15_14-47-51\checkpoint_000400"
-
-    algo = Algorithm.from_checkpoint(checkpoint_path)
-    env = create_env(0)
-
-    done, truncated = False, False
-    obs, info = env.reset()
-    lstm_states = None
-    init_state = state = [
-     np.zeros([LSTM_CELL_SIZE], np.float32) for _ in range(2)
-    ]
-    prev_a = 0
-    prev_r = 0.0
-    while not done and not truncated:
-        a, state_out, _ = algo.compute_single_action(
-            observation=obs, state=state, prev_action=prev_a, prev_reward=prev_r)
-        obs, reward, done, truncated, _ = env.step(a)
-        if done:
-            obs, info = env.reset()
-            state = init_state
-            prev_a = 0
-            prev_r = 0.0
-        else:
-            state = state_out
-            prev_a = a
-            prev_r = reward
-    env.save_for_render(dir="./render_logs")
 
 # tensorboard.exe  --logdir model/ray_results/PPO/
 #pip install  ray[rllib]==2.4.0

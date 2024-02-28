@@ -146,7 +146,7 @@ def create_test_env():
     env = TradingEnv(
         name="BTCUSD",
         df=df,
-        windows=1,
+        windows=50,
         # positions=[-1, -0.5, 0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
         # positions=[0, 0.5, 1],  # From -1 (=SHORT), to +1 (=LONG)
         positions=[0,  1],  # From -1 (=SHORT), to +1 (=LONG)
